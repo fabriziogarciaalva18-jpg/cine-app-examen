@@ -2,13 +2,12 @@
 FROM node:20-alpine AS build
 WORKDIR /app
 COPY package*.json ./
-# Usamos npm install en lugar de npm ci para evitar problemas con lockfile
 RUN npm install
 COPY . .
 RUN npm run build
 
-# Etapa 2: PHP (usamos 8.3 que es estable y oficial)
-FROM php:8.3-cli-alpine
+# Etapa 2: PHP 8.4 (requerido por Laravel 13 / Symfony 8)
+FROM php:8.4-cli-alpine
 
 # Instalar extensiones necesarias para Laravel y SQLite
 RUN apk add --no-cache \
