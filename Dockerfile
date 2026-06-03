@@ -5,7 +5,7 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
-FROM php:8.3-cli-alpine   # Si prefieres 8.4, usa php:8.4-cli-alpine
+FROM php:8.5-cli-alpine
 
 RUN apk add --no-cache \
     libpng-dev \
@@ -26,11 +26,9 @@ COPY composer.json composer.lock /app/
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-RUN mkdir -p /var/data
+RUN mkdir -p /var/data/posters /app/public
+RUN ln -s /var/data/posters /app/public/posters
 RUN chmod -R 777 /var/data
-
-RUN mkdir -p /app/public/posters
-RUN chmod 777 /app/public/posters
 
 ENV APP_ENV=production
 ENV APP_DEBUG=false
