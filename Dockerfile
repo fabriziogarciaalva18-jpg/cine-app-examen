@@ -1,29 +1,40 @@
+FROM node:22-alpine AS frontend
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+RUN npm run build
+
 FROM php:8.4-cli-alpine
 
-RUN apk add --no-cache sqlite-dev nodejs npm git \
-    && docker-php-ext-install pdo pdo_sqlite
+RUN apk add --no-cache sqlite-dev && docker-php-ext-install pdo pdo_sqlite
 
 WORKDIR /app
-
 COPY . /app
-
+COPY --from=frontend /app/public/build /app/public/build
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-RUN npm install && npm run build
-
 RUN mkdir -p /app/database /app/storage /app/public/posters /app/bootstrap/cache
 RUN chmod -R 777 /app/database /app/storage /app/public/posters /app/bootstrap/cache
 
-RUN echo "APP_NAME=CineAdmin" > /app/.env
-RUN echo "APP_ENV=production" >> /app/.env
-RUN echo "APP_KEY=" >> /app/.env
-RUN echo "APP_DEBUG=false" >> /app/.env
-RUN echo "APP_URL=https://cine-admin-uv5s.onrender.com" >> /app/.env
-RUN echo "DB_CONNECTION=sqlite" >> /app/.env
-RUN echo "DB_DATABASE=/app/database/database.sqlite" >> /app/.env
+# Crear .env con DEBUG ACTIVADO
+RUN echo "APP_NAME=CineAdmin" > /app/.env && \
+    echo "APP_ENV=production" >> /app/.env && \
+    echo "APP_KEY=" >> /app/.env && \
+    echo "APP_DEBUG=true" >> /app/.env && \
+    echo "APP_URL=https://cine-admin-uv5s.onrender.com" >> /app/.env && \
+    echo "DB_CONNECTION=sqlite" >> /app/.env && \
+    echo "DB_DATABASE=/app/database/database.sqlite" >> /app/.env && \
+    echo "LOG_CHANNEL=stderr" >> /app/.env
+
+# Asegurar que storage tiene los permisos correctos
+RUN chmod -R 777 /app/storage
 
 EXPOSE 10000
 
-CMD php artisan key:generate --force && php artisan migrate --force && php -S 0.0.0.0:${PORT:-10000} -t public
+CMD php artisan key:generate --force && \
+    php artisan config:clear && \
+    php artisan migrate --force && \
+    php -S 0.0.0.0:${PORT:-10000} -t public 2>&1 | tee /app/storage/logs/laravel.log
