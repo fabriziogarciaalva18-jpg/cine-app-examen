@@ -46,5 +46,6 @@ ENV DB_DATABASE=/var/data/database.sqlite
 EXPOSE 10000
 
 # Comando de arranque: migrar y servir
-CMD php artisan migrate --force && \
+CMD php artisan key:generate --force && \
+    php artisan migrate --force && \
     php artisan serve --host=0.0.0.0 --port=${PORT:-10000}
