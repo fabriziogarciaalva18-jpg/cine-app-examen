@@ -19,11 +19,15 @@ RUN composer install --no-dev --optimize-autoloader --no-interaction
 RUN mkdir -p /app/database /app/storage /app/public/posters /app/bootstrap/cache
 RUN chmod -R 777 /app/database /app/storage /app/public/posters /app/bootstrap/cache
 
-ENV APP_ENV=production
-ENV APP_DEBUG=false
-ENV DB_CONNECTION=sqlite
-ENV DB_DATABASE=/app/database/database.sqlite
+# CREAR EL ARCHIVO .env DIRECTAMENTE
+RUN echo "APP_NAME=CineAdmin" > /app/.env && \
+    echo "APP_ENV=production" >> /app/.env && \
+    echo "APP_KEY=" >> /app/.env && \
+    echo "APP_DEBUG=false" >> /app/.env && \
+    echo "APP_URL=https://cine-admin-uv5s.onrender.com" >> /app/.env && \
+    echo "DB_CONNECTION=sqlite" >> /app/.env && \
+    echo "DB_DATABASE=/app/database/database.sqlite" >> /app/.env
 
 EXPOSE 10000
 
-CMD sh -c "php artisan key:generate --force && php artisan migrate --force && php -S 0.0.0.0:${PORT:-10000} -t public"
+CMD php artisan key:generate --force && php artisan migrate --force && php -S 0.0.0.0:${PORT:-10000} -t public
