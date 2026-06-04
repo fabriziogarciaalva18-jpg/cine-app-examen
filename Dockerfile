@@ -1,7 +1,7 @@
 FROM node:20-alpine AS build
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci
+RUN npm install
 COPY . .
 RUN npm run build
 
@@ -25,20 +25,17 @@ COPY composer.json composer.lock /app/
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-# Crear carpetas y permisos
-RUN mkdir -p /var/data/posters /app/public
-RUN ln -s /var/data/posters /app/public/posters
-RUN chmod -R 777 /var/data /app/public/posters
+# Crear carpeta para posters
+RUN mkdir -p /app/public/posters
+RUN chmod -R 777 /app/public/posters /app/database
 
-# Variables de entorno
 ENV APP_ENV=production
 ENV APP_DEBUG=false
 ENV DB_CONNECTION=sqlite
-ENV DB_DATABASE=/var/data/database.sqlite
+ENV DB_DATABASE=/app/database/database.sqlite
 
 EXPOSE 10000
 
-# Comando de arranque con generación de clave y migración
 CMD php artisan key:generate --force && \
     php artisan migrate --force && \
     php artisan serve --host=0.0.0.0 --port=${PORT:-10000}
