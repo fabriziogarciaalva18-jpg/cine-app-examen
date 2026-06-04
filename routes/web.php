@@ -11,3 +11,8 @@ Route::get('/', function () {
 
 Route::resource('salas', SalaController::class);
 Route::resource('peliculas', PeliculaController::class);
+
+// Ruta para health check de Render
+Route::get('/up', function () {
+    return response()->json(['status' => 'ok']);
+});
