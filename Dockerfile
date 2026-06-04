@@ -25,21 +25,8 @@ COPY composer.json composer.lock /app/
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-# Crear TODAS las carpetas necesarias
-RUN mkdir -p /app/public/posters \
-    /app/database \
-    /app/storage/logs \
-    /app/storage/framework/views \
-    /app/storage/framework/cache \
-    /app/storage/framework/sessions \
-    /app/storage/app/public \
-    /app/bootstrap/cache
-
-# Permisos amplios
-RUN chmod -R 777 /app/public/posters \
-    /app/database \
-    /app/storage \
-    /app/bootstrap/cache
+RUN mkdir -p /app/public/posters /app/database /app/storage/logs /app/storage/framework/views /app/storage/framework/cache /app/storage/framework/sessions /app/bootstrap/cache
+RUN chmod -R 777 /app/public/posters /app/database /app/storage /app/bootstrap/cache
 
 ENV APP_ENV=production
 ENV APP_DEBUG=false
@@ -48,9 +35,4 @@ ENV DB_DATABASE=/app/database/database.sqlite
 
 EXPOSE 10000
 
-# Comando con depuración: lista archivos y luego arranca
-CMD ls -la /app && \
-    ls -la /app/database && \
-    php artisan key:generate --force && \
-    php artisan migrate --force && \
-    php artisan serve --host=0.0.0.0 --port=${PORT:-10000}
+CMD php artisan key:generate --force && php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=${PORT:-10000}
