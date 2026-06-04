@@ -5,7 +5,8 @@ RUN npm install
 COPY . .
 RUN npm run build
 
-FROM php:8.3-cli-alpine
+# Usar PHP 8.4 (requerido por Laravel 13 y Symfony 8.1)
+FROM php:8.4-cli-alpine
 
 RUN apk add --no-cache \
     libpng-dev \
@@ -25,8 +26,8 @@ COPY composer.json composer.lock /app/
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-# Crear carpeta para posters
-RUN mkdir -p /app/public/posters
+# Crear carpeta para posters y base de datos
+RUN mkdir -p /app/public/posters /app/database
 RUN chmod -R 777 /app/public/posters /app/database
 
 ENV APP_ENV=production
